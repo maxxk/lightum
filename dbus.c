@@ -31,8 +31,8 @@
 
 /* KDE PowerManagement */
 #define KDE_DBUS_SERVICE    "org.kde.Solid.PowerManagement"
-#define KDE_DBUS_PATH       "/org/kde/Solid/PowerManagement"
-#define KDE_DBUS_INTERFACE  "org.kde.Solid.PowerManagement"
+#define KDE_DBUS_PATH       "/org/kde/Solid/PowerManagement/Actions/BrightnessControl"
+#define KDE_DBUS_INTERFACE  "org.kde.Solid.PowerManagement.Actions.BrightnessControl"
 
 extern int set_screen_xbacklight_value (int backlight);
 
@@ -292,7 +292,7 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
         KDE_DBUS_SERVICE,
         KDE_DBUS_PATH,
         KDE_DBUS_INTERFACE,
-        "SetBrightness");        
+        "setBrightness");
     
     if (message == NULL) {
         g_warning ("Failed to allocate the dbus message");
@@ -301,7 +301,7 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
 
     g_dbus_message_set_body (
         message, 
-        g_variant_new ("(u)", backlight));  
+        g_variant_new ("(i)", backlight));
           
     error = NULL;
     
@@ -325,8 +325,8 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
     }
  
     body = g_dbus_message_get_body (reply);
-    g_variant_get (body, "(u)", &value);
- 
+    g_variant_get (body, "(i)", &value);
+
     g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);

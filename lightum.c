@@ -216,9 +216,9 @@ int main(int argc, char *argv[]) {
 		backlight_restore=get_screen_backlight_value();
 
 		// detect dbus backend: 0: gnome, 1: kde
-		tmp = dbus_set_screen_backlight_value_gnome(acpi_to_dbus_backlight(backlight_restore));
+		tmp = dbus_set_screen_backlight_value_kde(acpi_to_dbus_backlight(backlight_restore));
 		if (tmp == -1) {
-			tmp = dbus_set_screen_backlight_value_kde(acpi_to_dbus_backlight(backlight_restore));
+			tmp = dbus_set_screen_backlight_value_gnome(acpi_to_dbus_backlight(backlight_restore));
 			if (tmp == -1) {
 				tmp = set_screen_xbacklight_value(acpi_to_dbus_backlight(backlight_restore));
 				if ( tmp == -1 ) {
@@ -228,11 +228,10 @@ int main(int argc, char *argv[]) {
 					dbus_backend=2;
 				}
 			} else {
-				dbus_backend=1;	
+				dbus_backend=0;
 			}
-
 		} else {
-			dbus_backend=0;
+			dbus_backend=1;
 		}
 	}
 
