@@ -14,10 +14,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* GNOME Screensaver */
-#define GS_DBUS_SERVICE     "org.gnome.ScreenSaver"
-#define GS_DBUS_PATH        "/org/gnome/ScreenSaver"
-#define GS_DBUS_INTERFACE   "org.gnome.ScreenSaver"
+/* Screensaver */
+#define GS_DBUS_SERVICE     "org.freedesktop.ScreenSaver"
+#define GS_DBUS_PATH        "/org/freedesktop/ScreenSaver"
+#define GS_DBUS_INTERFACE   "org.freedesktop.ScreenSaver"
 
 /* UPower */
 #define UP_DBUS_SERVICE     "org.freedesktop.UPower"
@@ -107,7 +107,7 @@ int get_screensaver_active() {
        and we should return 0 here to state that the screensaver is off
      */
     if (!g_variant_check_format_string(body, "(b)", FALSE)) {
-	g_warning ("variant return type is unexpected in get_screensaver_active");
+	g_warning ("variant return type is unexpected");
 	return 0;
     }
 
@@ -223,7 +223,7 @@ int dbus_get_screen_backlight_value() {
     body = g_dbus_message_get_body (reply);
     
     if (!g_variant_check_format_string(body, "(u)", FALSE)) {
-	g_warning ("variant return type is unexpected in dbus_get_screen_backlight_value");
+	g_warning ("variant return type is unexpected");
 	return -1;
     }
 
@@ -287,7 +287,7 @@ int dbus_set_screen_backlight_value_gnome (int backlight) {
 
     if (!g_variant_check_format_string(body, "(u)", FALSE))
     {
-        g_warning ("variant return type is unexpected in dbus_set_screen_backlight_value_gnome");
+        g_warning ("variant return type is unexpected");
         return -1;
     }
 
@@ -350,7 +350,7 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
 
     if (!g_variant_check_format_string(body, "(u)", FALSE))
     {
-        g_warning ("variant return type is unexpected in dbus_set_screen_backlight_value_kde");
+        g_warning ("variant return type is unexpected");
         return -1;
     }
 
