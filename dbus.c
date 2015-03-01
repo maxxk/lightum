@@ -37,10 +37,10 @@
 extern int set_screen_xbacklight_value (int backlight);
 
 GDBusConnection *get_dbus_message_bus (int bus_type) {
- 
+
     GDBusConnection *connection;
     GError *error = NULL;
-    
+
     connection = g_bus_get_sync (bus_type, NULL, &error);
     if (error) {
         g_warning ("Failed to get session bus: %s", error->message);
@@ -51,7 +51,7 @@ GDBusConnection *get_dbus_message_bus (int bus_type) {
     }
 
     return connection;
-    
+
 }
 
 int get_screensaver_active() {
@@ -59,7 +59,7 @@ int get_screensaver_active() {
     GDBusMessage    *message, *reply;
     GDBusConnection *connection;
     GError          *error;
-    GVariant        *body; 
+    GVariant        *body;
     gint32           value;
     
     connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
@@ -68,7 +68,7 @@ int get_screensaver_active() {
         GS_DBUS_SERVICE,
         GS_DBUS_PATH,
         GS_DBUS_INTERFACE,
-        "GetActive");        
+        "GetActive");
     
     if (message == NULL) {
         g_warning ("Failed to allocate the dbus message");
@@ -76,12 +76,12 @@ int get_screensaver_active() {
     }
 
     g_dbus_message_set_body (
-        message, 
-        g_variant_new ("(b)", TRUE)
-    );  
-          
+        message,
+	NULL
+    );
+  
     error = NULL;
-    
+
     reply = g_dbus_connection_send_message_with_reply_sync (
         connection,
         message,
@@ -102,11 +102,17 @@ int get_screensaver_active() {
     }
    
     body = g_dbus_message_get_body (reply);
-    g_variant_get (body, "(&s)", &value);
+
+    if (!g_variant_check_format_string(body, "(b)", FALSE)) {
+	g_warning ("variant return type is unexpected");
+	return -1;
+    }
+
+    g_variant_get (body, "(b)", &value);
     
+    g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
-    g_object_unref (reply);
 
     return value;
 
@@ -117,27 +123,27 @@ int set_keyboard_brightness_value (int brightness) {
     GDBusMessage    *message, *reply;
     GDBusConnection *connection;
     GError          *error;
-    
+
     connection = get_dbus_message_bus (G_BUS_TYPE_SYSTEM);
 
     message = g_dbus_message_new_method_call (
         UP_DBUS_SERVICE,
         UP_DBUS_PATH,
         UP_DBUS_INTERFACE,
-        "SetBrightness");        
-    
+        "SetBrightness");
+
     if (message == NULL) {
         g_warning ("Failed to allocate the dbus message");
         return -1;
     }
 
     g_dbus_message_set_body (
-        message, 
+        message,
         g_variant_new ("(i)", brightness)
-    );  
-          
+    );
+
     error = NULL;
-    
+
     reply = g_dbus_connection_send_message_with_reply_sync (
         connection,
         message,
@@ -156,7 +162,7 @@ int set_keyboard_brightness_value (int brightness) {
         g_warning ("unable to flush message queue: %s", error->message);
         g_clear_error (&error);
     }
- 
+
     g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
@@ -169,16 +175,16 @@ int dbus_get_screen_backlight_value() {
     GDBusMessage    *message, *reply;
     GDBusConnection *connection;
     GError          *error;
-    GVariant        *body; 
+    GVariant        *body;
     gint32           value;
-    
-    connection = get_dbus_message_bus(G_BUS_TYPE_SESSION);
+ 
+    connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
 
     message = g_dbus_message_new_method_call (
         SD_DBUS_SERVICE,
         SD_DBUS_PATH,
         SD_DBUS_INTERFACE,
-        "GetPercentage");        
+        "GetPercentage");
     
     if (message == NULL) {
         g_warning ("Failed to allocate the dbus message");
@@ -187,11 +193,11 @@ int dbus_get_screen_backlight_value() {
 
     g_warning ("before message_get_body");
     g_dbus_message_set_body (
-        message, 
-        g_variant_new ("(y)", NULL));  
-          
+        message,
+        g_variant_new ("(y)", NULL));
+
     error = NULL;
-    
+
     reply = g_dbus_connection_send_message_with_reply_sync (
         connection,
         message,
@@ -212,11 +218,17 @@ int dbus_get_screen_backlight_value() {
     }
    
     body = g_dbus_message_get_body (reply);
+    
+    if (!g_variant_check_format_string(body, "(u)", FALSE)) {
+	g_warning ("variant return type is unexpected");
+	return -1;
+    }
+
     g_variant_get (body, "(u)", &value);
- 
+
+    g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
-    g_object_unref (reply);
 
     return value;
 
@@ -227,28 +239,28 @@ int dbus_set_screen_backlight_value_gnome (int backlight) {
     GDBusMessage    *message, *reply;
     GDBusConnection *connection;
     GError          *error;
-    GVariant        *body; 
+    GVariant        *body;
     gint32           value;
-    
+
     connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
- 
+
     message = g_dbus_message_new_method_call (
         SD_DBUS_SERVICE,
         SD_DBUS_PATH,
         SD_DBUS_INTERFACE,
-        "SetPercentage");        
-    
+        "SetPercentage");
+
     if (message == NULL) {
         g_warning ("Failed to allocate the dbus message");
         return -1;
     }
 
     g_dbus_message_set_body (
-        message, 
-        g_variant_new ("(u)", backlight));  
-          
+        message,
+        g_variant_new ("(u)", backlight));
+
     error = NULL;
-    
+
     reply = g_dbus_connection_send_message_with_reply_sync (
         connection,
         message,
@@ -267,15 +279,22 @@ int dbus_set_screen_backlight_value_gnome (int backlight) {
         g_warning ("unable to flush message queue: %s", error->message);
         g_clear_error (&error);
     }
- 
+
     body = g_dbus_message_get_body (reply);
+
+    if (!g_variant_check_format_string(body, "(u)", FALSE))
+    {
+        g_warning ("variant return type is unexpected");
+        return -1;
+    }
+
     g_variant_get (body, "(u)", &value);
- 
+
     g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
 
-	return value;
+    return value;
 }
 
 int dbus_set_screen_backlight_value_kde (int backlight) {
@@ -283,28 +302,28 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
     GDBusMessage    *message, *reply;
     GDBusConnection *connection;
     GError          *error;
-    GVariant        *body; 
+    GVariant        *body;
     gint32           value;
-    
+
     connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
 
     message = g_dbus_message_new_method_call (
         KDE_DBUS_SERVICE,
         KDE_DBUS_PATH,
         KDE_DBUS_INTERFACE,
-        "SetBrightness");        
-    
+        "SetBrightness");
+
     if (message == NULL) {
         g_warning ("Failed to allocate the dbus message");
         return -1;
     }
 
     g_dbus_message_set_body (
-        message, 
-        g_variant_new ("(u)", backlight));  
-          
+        message,
+        g_variant_new ("(u)", backlight));
+
     error = NULL;
-    
+
     reply = g_dbus_connection_send_message_with_reply_sync (
         connection,
         message,
@@ -323,27 +342,34 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
         g_warning ("unable to flush message queue: %s", error->message);
         g_clear_error (&error);
     }
- 
+
     body = g_dbus_message_get_body (reply);
+
+    if (!g_variant_check_format_string(body, "(u)", FALSE))
+    {
+        g_warning ("variant return type is unexpected");
+        return -1;
+    }
+
     g_variant_get (body, "(u)", &value);
- 
+
     g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
 
-	return value;
+    return value;
 
 }
 
 
 int dbus_set_screen_backlight_value (int backlight, int backend) {
 
-	int ret=-1;
+    int ret=-1;
 
-	if (backend == 0) ret = dbus_set_screen_backlight_value_gnome(backlight); 
-	if (backend == 1) ret = dbus_set_screen_backlight_value_kde(backlight);
-	if (backend == 2) ret = set_screen_xbacklight_value(backlight);
+    if (backend == 0) ret = dbus_set_screen_backlight_value_gnome(backlight);
+    if (backend == 1) ret = dbus_set_screen_backlight_value_kde(backlight);
+    if (backend == 2) ret = set_screen_xbacklight_value(backlight);
 
-	return ret;
-	
+    return ret;
+
 }
