@@ -103,9 +103,12 @@ int get_screensaver_active() {
    
     body = g_dbus_message_get_body (reply);
 
+    /* If the screensaver is not set (GetActive method is missing) then the body will return a string
+       and we should return 0 here to state that the screensaver is off
+     */
     if (!g_variant_check_format_string(body, "(b)", FALSE)) {
 	g_warning ("variant return type is unexpected");
-	return -1;
+	return 0;
     }
 
     g_variant_get (body, "(b)", &value);
