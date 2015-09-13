@@ -10,8 +10,8 @@ MacBook based laptops.
 By default it will run in "auto" mode, this means it will read data from the
 ambient light sensor (located on the iSight camera) and automatically:
 
-- light up or dim the keyboard brightness 
-- light up or dim the the video backlight 
+- light up or dim the keyboard brightness
+- light up or dim the the video backlight
 
 It will also dim the keyboard brightness and screen backlight when the computer
 is not used for a configurable amount of seconds.
@@ -59,9 +59,9 @@ Official Ubuntu packages are available in [poliva/lightum-mba ppa](https://launc
      sudo add-apt-repository ppa:poliva/lightum-mba
      sudo apt-get update
      sudo apt-get install lightum
-     
-Compiling from source
----------------------
+
+Compiling from source - Ubuntu
+------------------------------
 (Tested on Ubuntu 13.04)
 
   1. Install the build-essential package: ```sudo apt-get install build-essential```
@@ -69,6 +69,14 @@ Compiling from source
   3. Install the dependencies ```sudo apt-get install libxss-dev libdbus-glib-1-dev```
   4. Run ```make```
   5. Run ```sudo make install```
+
+Compiling from source - Fedora
+------------------------------
+(Tested on Fedora 22)
+
+  1. Install the dependencies ```sudo dnf install -y libXScrnSaver-devel libdbusmenu-devel systemd-devel```
+  2. Run ```make```
+  3. Run ```sudo make install```
 
 Indicator applet
 ----------------
