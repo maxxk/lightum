@@ -28,7 +28,7 @@ int get_keyboard_brightness_value() {
 
 	int fd;
 	char buf[5];
-	const char *kbd_backlight="/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness";
+	const char *kbd_backlight="/sys/class/leds/smc::kbd_backlight/brightness";
 	ssize_t cnt;
 
 	/* read light sensor value */
@@ -83,12 +83,27 @@ int get_screen_backlight_value() {
 	int fd, actual_backlight, max_backlight;
 	char buf[5];
 	struct stat tmp;
-	const char *scr_backlight="/sys/class/backlight/acpi_video0/actual_brightness";
-	const char *scr_maxbacklight="/sys/class/backlight/acpi_video0/max_brightness";
+	const char *scr_backlights[]={
+		"/sys/class/backlight/intel_backlight/actual_brightness",
+		"/sys/class/backlight/acpi_video0/actual_brightness",
+		"/sys/class/backlight/gmux_backlight/actual_brightness"};
+	const char *scr_maxbacklights[]={
+		"/sys/class/backlight/intel_backlight/max_brightness",
+		"/sys/class/backlight/acpi_video0/max_brightness",
+		"/sys/class/backlight/gmux_backlight/max_brightness"};
 	ssize_t cnt;
-    int ret=0, backlight=15;
+	int ret=0, backlight=15;
+	size_t i;
 
-	if (stat(scr_backlight, &tmp) == 0) {
+
+	// Try all locations of screen brightness files
+	for (i = 0; i < sizeof(scr_backlights) / sizeof(const char **); ++ i) {
+		const char *scr_backlight = scr_backlights[i];
+		const char *scr_maxbacklight = scr_maxbacklights[i];
+
+		/* This backlight file does not exist. Try next one. */
+		if (stat(scr_backlight, &tmp) == -1)
+			continue;
 
 		/* read screen backlight value */
 		fd = open(scr_backlight, O_RDONLY);
@@ -116,16 +131,13 @@ int get_screen_backlight_value() {
 
 		/* make sure we always return a value between 0 and 15 */
 		return (15*actual_backlight)/max_backlight;
-
-	} else {
-		// fallback to xbacklight
-		// we prefer to avoid this because it forks xbacklight
-
-		backlight = get_screen_xbacklight_value();
-		ret = dbus_to_acpi_backlight(backlight);
-		return ret;
-
 	}
+
+	// fallback to xbacklight
+	// we prefer to avoid this because it forks xbacklight
+	backlight = get_screen_xbacklight_value();
+	ret = dbus_to_acpi_backlight(backlight);
+	return ret;
 }
 
 int dbus_to_acpi_backlight(int backlight) {

@@ -7,8 +7,8 @@ MacBook based laptops.
 By default it will run in "auto" mode, this means it will read data from the
 ambient light sensor (located on the iSight camera) and automatically:
 
-	a) light up or dim the keyboard brightness 
-	b) light up or dim the the video backlight 
+	a) light up or dim the keyboard brightness
+	b) light up or dim the the video backlight
 
 It will also dim the keyboard brightness and screen backlight when the computer
 is not used for a configurable amount of seconds (5 by default).
@@ -55,5 +55,11 @@ Compiling from source (Tested on Ubuntu 13.04)
   3. Install the dependencies "sudo apt-get install libxss-dev libdbus-glib-1-dev"
   4. Run "make"
   5. Run "sudo make install"
+
+Compiling from source (Tested on Fedora 22)
+
+  1. Install the dependencies ```sudo dnf install -y libXScrnSaver-devel libdbusmenu-devel systemd-devel```
+  2. Run ```make```
+  3. Run ```sudo make install```
 
 Enjoy! :)
