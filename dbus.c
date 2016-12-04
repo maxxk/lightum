@@ -14,10 +14,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* GNOME Screensaver */
-#define GS_DBUS_SERVICE     "org.gnome.ScreenSaver"
-#define GS_DBUS_PATH        "/org/gnome/ScreenSaver"
-#define GS_DBUS_INTERFACE   "org.gnome.ScreenSaver"
+/* Screensaver */
+#define GS_DBUS_SERVICE     "org.freedesktop.ScreenSaver"
+#define GS_DBUS_PATH        "/org/freedesktop/ScreenSaver"
+#define GS_DBUS_INTERFACE   "org.freedesktop.ScreenSaver"
 
 /* Cinnamon Screensaver */
 #define CS_DBUS_SERVICE     "org.cinnamon.ScreenSaver"
@@ -104,9 +104,9 @@ int get_screensaver_active() {
 
     g_dbus_message_set_body (
         message,
-        g_variant_new ("(b)", TRUE)
+	NULL
     );
-
+  
     error = NULL;
 
     reply = g_dbus_connection_send_message_with_reply_sync (
@@ -127,20 +127,22 @@ int get_screensaver_active() {
         g_warning ("unable to flush message queue: %s", error->message);
         g_clear_error (&error);
     }
-
+   
     body = g_dbus_message_get_body (reply);
 
-    if (!g_variant_check_format_string(body, "(&s)", FALSE))
-    {
-        g_warning ("variant return type is unexpected");
-        return -1;
+    /* If the screensaver is not set (GetActive method is missing) then the body will return a string
+       and we should return 0 here to state that the screensaver is off
+     */
+    if (!g_variant_check_format_string(body, "(b)", FALSE)) {
+	g_warning ("variant return type is unexpected");
+	return 0;
     }
 
-    g_variant_get (body, "(&s)", &value);
-
+    g_variant_get (body, "(b)", &value);
+    
+    g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
-    g_object_unref (reply);
 
     return value;
 
@@ -336,9 +338,9 @@ int dbus_get_screen_backlight_value() {
 
     g_variant_get (body, "(u)", &value);
 
+    g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
-    g_object_unref (reply);
 
     return value;
 
@@ -424,6 +426,7 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
     GDBusConnection *connection;
     GError          *error;
     GVariant        *body;
+    gint32           value;
 
     connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
 
