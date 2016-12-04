@@ -39,10 +39,15 @@
 #define CSD_DBUS_PATH       "/org/cinnamon/SettingsDaemon/Power"
 #define CSD_DBUS_INTERFACE  "org.cinnamon.SettingsDaemon.Power.Screen"
 
-/* KDE PowerManagement */
+/* KDE PowerManagement: screen brightness */
 #define KDE_DBUS_SERVICE    "org.kde.Solid.PowerManagement"
 #define KDE_DBUS_PATH       "/org/kde/Solid/PowerManagement/Actions/BrightnessControl"
 #define KDE_DBUS_INTERFACE  "org.kde.Solid.PowerManagement.Actions.BrightnessControl"
+
+/* KDE PowerManagement: keyboard brightness */
+#define KDE_KBD_DBUS_SERVICE   "org.kde.Solid.PowerManagement"
+#define KDE_KBD_DBUS_PATH      "/org/kde/Solid/PowerManagement/Actions/KeyboardBrightnessControl"
+#define KDE_KBD_DBUS_INTERFACE "org.kde.Solid.PowerManagement.Actions.KeyboardBrightnessControl"
 
 extern int set_screen_xbacklight_value (int backlight);
 
@@ -141,7 +146,7 @@ int get_screensaver_active() {
 
 }
 
-int set_keyboard_brightness_value (int brightness) {
+int set_keyboard_brightness_value_upower (int brightness) {
 
     GDBusMessage    *message, *reply;
     GDBusConnection *connection;
@@ -191,6 +196,75 @@ int set_keyboard_brightness_value (int brightness) {
     g_object_unref (message);
 
     return 0;
+}
+
+int set_keyboard_brightness_value_kde (int backlight) {
+
+    GDBusMessage    *message, *reply;
+    GDBusConnection *connection;
+    GError          *error;
+    GVariant        *body;
+
+    connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
+
+    message = g_dbus_message_new_method_call (
+        KDE_KBD_DBUS_SERVICE,
+        KDE_KBD_DBUS_PATH,
+        KDE_KBD_DBUS_INTERFACE,
+        "setKeyboardBrightnessSilent");
+
+    if (message == NULL) {
+        g_warning ("Failed to allocate the dbus message");
+        return -1;
+    }
+
+    g_dbus_message_set_body (
+        message,
+        g_variant_new ("(i)", backlight));
+
+    error = NULL;
+
+    reply = g_dbus_connection_send_message_with_reply_sync (
+        connection,
+        message,
+        G_DBUS_SEND_MESSAGE_FLAGS_NONE,
+        -1,
+        NULL,
+        NULL,
+        &error);
+    if (error != NULL) {
+        g_warning ("unable to send message: %s", error->message);
+        g_clear_error (&error);
+    }
+
+    g_dbus_connection_flush_sync (connection, NULL, &error);
+    if (error != NULL) {
+        g_warning ("unable to flush message queue: %s", error->message);
+        g_clear_error (&error);
+    }
+
+    body = g_dbus_message_get_body (reply);
+    /* void return; ignore */
+    (void) body;
+
+    g_object_unref (reply);
+    g_object_unref (connection);
+    g_object_unref (message);
+
+    return 0;
+
+}
+
+int set_keyboard_brightness_value (int backlight, int backend) {
+
+    int ret=-1;
+
+    if (backend == 0) ret = set_keyboard_brightness_value_upower(backlight);
+    if (backend == 1) ret = set_keyboard_brightness_value_kde(backlight);
+    if (backend == 2) ret = set_keyboard_brightness_value_upower(backlight);
+
+    return ret;
+
 }
 
 int dbus_get_screen_backlight_value() {
@@ -350,7 +424,6 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
     GDBusConnection *connection;
     GError          *error;
     GVariant        *body;
-    gint32           value;
 
     connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
 
@@ -358,7 +431,7 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
         KDE_DBUS_SERVICE,
         KDE_DBUS_PATH,
         KDE_DBUS_INTERFACE,
-        "setBrightness");
+        "setBrightnessSilent");
     
     if (message == NULL) {
         g_warning ("Failed to allocate the dbus message");
@@ -391,20 +464,14 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
     }
 
     body = g_dbus_message_get_body (reply);
-
-    if (!g_variant_check_format_string(body, "(i)", FALSE))
-    {
-        g_warning ("variant return type is unexpected");
-        return -1;
-    }
-
-    g_variant_get (body, "(i)", &value);
+    /* void return; ignore */
+    (void) body;
 
     g_object_unref (reply);
     g_object_unref (connection);
     g_object_unref (message);
 
-    return value;
+    return 0;
 
 }
 

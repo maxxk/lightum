@@ -69,13 +69,15 @@ void check_config_values(conf_data conf) {
 	if (conf.workmode < 1 || conf.workmode > 3) usage("ERROR: Wrong value in config variable 'workmode'\n");
 }
 
+int dbus_backend = -1;
+
 int main(int argc, char *argv[]) {
 
 	int screensaver=0, c, brightness_prev=-1, backlight_prev=-1;
 	int light=0, brightness=255, backlight=100;
 	int foreground=0, verbose=0, debug=0;
 	int brightness_restore, backlight_restore, brightness_restoreflag=0, backlight_restoreflag=0;
-	int res, dbus_backend=-1, tmp=-1;
+	int res, tmp=-1;
 	float idletime=0;
 	pid_t pid;
 	conf_data conf;
@@ -415,7 +417,7 @@ int main(int argc, char *argv[]) {
 					brightness_restoreflag=1;
 				}
 				if (debug == 1 || debug == 3) printf ("-> set keyboard brightness: %d -> %d\n",brightness_prev,brightness);
-				fading(brightness_prev,brightness);
+				fading(brightness_prev,brightness,dbus_backend);
 				g_usleep(1500);
 				brightness=get_keyboard_brightness_value();
 				brightness_prev=brightness;
@@ -426,7 +428,7 @@ int main(int argc, char *argv[]) {
 					if (verbose) printf("-> Detected user brightness change, current brightness is set to %d\n", tmp);
 					if (conf.ignoreuser) {
 						if (debug == 1 || debug == 3) printf ("\n*** forcing brightness from %d to %d\n", tmp, brightness);
-						fading(tmp,brightness);
+						fading(tmp,brightness,dbus_backend);
 					}
 				}
 			}

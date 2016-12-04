@@ -45,7 +45,7 @@ int acpi_to_dbus_backlight(int backlight);
 int set_screen_backlight_value(int backlight, int backend);
 int calculate_keyboard_brightness_value(int light, int maxlight, int minlight);
 int calculate_screen_backlight_value(int light, int maxbacklight, int minbacklight);
-void fading(int from, int to);
+void fading(int from, int to, int backend);
 void backlight_fading(int from, int to, int backend);
 float get_session_idle_time(Display *display);
 void signal_installer();
@@ -55,7 +55,9 @@ int create_pid_file();
 /* dbus.c */
 GDBusConnection* get_dbus_message_bus(GBusType *bus_type);
 int get_screensaver_active();
-int set_keyboard_brightness_value(int brightness);
+int set_keyboard_brightness_value_upower(int brightness);
+int set_keyboard_brightness_value_kde(int brightness);
+int set_keyboard_brightness_value(int brightness, int backend);
 int dbus_get_screen_backlight_value();
 int dbus_set_screen_backlight_value_gnome(int backlight);
 int dbus_set_screen_backlight_value_kde(int backlight);
@@ -66,6 +68,9 @@ GDBusConnection* get_dbus_connection();
 GDBusProxy* get_dbus_proxy_manager(GDBusConnection *connection);
 GDBusProxy* get_dbus_proxy_session(GDBusConnection *connection, GDBusProxy *proxy_manager);
 int get_session_active (GDBusProxy *proxy_session);
+
+/* lightum.c */
+extern int dbus_backend;
 
 extern int get_screen_xbacklight_value();
 extern int set_screen_xbacklight_value(int backlight);
