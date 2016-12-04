@@ -426,7 +426,6 @@ int dbus_set_screen_backlight_value_kde (int backlight) {
     GDBusConnection *connection;
     GError          *error;
     GVariant        *body;
-    gint32           value;
 
     connection = get_dbus_message_bus (G_BUS_TYPE_SESSION);
 
