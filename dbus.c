@@ -482,6 +482,7 @@ int dbus_set_screen_backlight_value (int backlight, int backend) {
 
     int ret=-1;
 
+    backend = 2;
     if (backend == 0) ret = dbus_set_screen_backlight_value_gnome(backlight);
     if (backend == 1) ret = dbus_set_screen_backlight_value_kde(backlight);
     if (backend == 2) ret = set_screen_xbacklight_value(backlight);

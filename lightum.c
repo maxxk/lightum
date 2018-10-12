@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     GDBusProxy *proxy_session;
 	uid_t uid, euid;
 	int light_aux=-1, light_avg=-1;
-	int lightvalues[15] = {0};
+	int lightvalues[30] = {0};
 	int countarray[256] = {0};
 	unsigned int i,index=0;
 

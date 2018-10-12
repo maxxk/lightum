@@ -2,7 +2,7 @@
 #include "xbacklight.h"
 
 int get_screen_xbacklight_value() {
-	FILE * f = popen( "xbacklight", "r" );
+	FILE * f = popen( "brightlight -r", "r" );
 	if ( f == 0 ) {
 		fprintf( stderr, "Could not execute\n" );
 		return -1;
@@ -20,7 +20,7 @@ int set_screen_xbacklight_value(int backlight) {
 
 	char name[256];
 
-	snprintf(name, 256, "xbacklight -set %.3d\n", backlight);
+	snprintf(name, 256, "brightlight -p -w %.3d\n", backlight);
 
 	FILE * f = popen(name , "r" );
 	if ( f == 0 ) {
